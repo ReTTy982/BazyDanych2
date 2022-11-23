@@ -12,3 +12,4 @@ select * from BazyDanych2.test1;
 
 
 select * from test;
+select * from test1;
