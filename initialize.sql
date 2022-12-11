@@ -1,7 +1,10 @@
 /*
 1. DROP
 2. CREATE
-3. 
+3. VARS
+4. VIEWS
+5. TRIGGERS
+
 
 
 
@@ -22,61 +25,101 @@ USE wypozyczalnia;
 -- CREATE
 
 CREATE TABLE publisher (
-    publisher_name VARCHAR(100) primary key not null    
-);
-
-CREATE TABLE book (
-    book_id int primary key not null,
-    book_title VARCHAR(100) not null,
-    publisher_name VARCHAR(100) not null,
-    author_id VARCHAR(255) not null,
-    CONSTRAINT fk_publisher_name
-    FOREIGN KEY (publisher_name)
-    REFERENCES publisher(publisher_name) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_author_id
-    FOREIGN key (author_id)
-    REFERENCES author(author_id) on UPDATE CASCADE on DELETE RESTRICT
+    PublisherName VARCHAR(100) primary key,
+    PhoneNumber VARCHAR(30)    
 );
 
 CREATE TABLE author (
-    author_id int primary key not null,
-    author_name VARCHAR(255) not null,
+    AuthorID int primary key not null auto_increment,
+    AuthorName VARCHAR(255) not null
 );
+
+CREATE TABLE book (
+    BookID int primary key not null,
+    BookTitle VARCHAR(100) not null,
+    PublisherName VARCHAR(100) not null,
+    AuthorID int not null,
+    CONSTRAINT fk_book_publisher
+    FOREIGN KEY (PublisherName)
+    REFERENCES publisher(PublisherName) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_book_author
+    FOREIGN key (AuthorID)
+    REFERENCES author(AuthorID) on UPDATE CASCADE on DELETE RESTRICT
+);
+
+
 
 CREATE TABLE branch (
-    branch_id int primary key not null,
-    branch_addres VARCHAR(50) not null
+    BranchID int primary key not null,
+    BranchAddress VARCHAR(50) not null
 
 );
 
-CREATE TABLE book_copy(
-    copy_id int primary key not null,
-    book_id int not null,
-    branch_id int not null,
-    CONSTRAINT fk_book_id
-    FOREIGN key (book_id)
-    REFERENCES book(book_id) on UPDATE CASCADE on DELETE RESTRICT,
-    CONSTRAINT fk_branch_id
-    FOREIGN key (branch_id)
-    REFERENCES branch(branch_id) on UPDATE CASCADE on DELETE REFERENCES
+CREATE TABLE bookCopy (
+    CopyID int primary key not null,
+    BookID int not null,
+    BranchID int not null,
+    CONSTRAINT fk_bookCopy_book
+    FOREIGN key (BookID)
+    REFERENCES book(BookID) on UPDATE CASCADE on DELETE RESTRICT,
+    CONSTRAINT fk_bookCopy_branch
+    FOREIGN key (BranchID)
+    REFERENCES branch(BranchID) on UPDATE CASCADE on DELETE RESTRICT
 );
 
 CREATE TABLE user (
-    user_id int primary key not null auto_increment,
-    first_name VARCHAR(255) not null,
-    last_name VARCHAR(255) not null,
-    card_number int not null,
-    address VARCHAR(255) not null,
-    phone_number int not null
+    UserID int primary key not null auto_increment,
+    FirstName VARCHAR(255) not null,
+    LastName VARCHAR(255) not null,
+    CardNumber int not null unique,
+    Login varchar(30) not null unique,
+    Password varchar(30) not null, -- Dodac tutaj kodowanie 
+    Address VARCHAR(255) not null,
+    PhoneNumber int not null
 );
 
-CREATE TABLE loan(
-
+CREATE TABLE bookIssue(
+    bookIssueID int primary key,
+    CopyID int not null,
+    BranchID int not null,
+    CardNumber int not null,
+    CONSTRAINT fk_bookIssue_bookCopy
+    FOREIGN key (CopyID)
+    REFERENCES bookCopy(CopyID) on UPDATE CASCADE on DELETE RESTRICT,
+    CONSTRAINT fk_bookIssue_branch
+    FOREIGN key (BranchID)
+    REFERENCES branch(BranchID) on UPDATE CASCADE on DELETE RESTRICT,
+    CONSTRAINT fk_bookIssue_user
+    FOREIGN key (CardNumber)
+    REFERENCES user(CardNumber) on DELETE RESTRICT
 );
 
 CREATE TABLE librarian(
-
+    LibrarianID int primary key auto_increment,
+    Login varchar(20) not null,
+    Password varchar(20) not null,
+    BranchID int not null,
+    FirstName VARCHAR(255) not null,
+    LastName VARCHAR(255) not null
 );
+
+-- VARS
+SET @viewBooksInBranchVariable := 1;
+-- VIEWS
+
+CREATE VIEW viewBooksInBranch AS 
+SELECT bookCopy.CopyID, book.BookTitle, author.AuthorName
+FROM bookCopy
+INNER JOIN book ON bookCopy.BookID=book.BookID
+INNER JOIN author ON book.AuthorID=author.AuthorID;
+
+
+
+
+
+-- TRIGGERS
+
+
 
 
 
