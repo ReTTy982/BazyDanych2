@@ -127,7 +127,7 @@ group by bookCopy.BranchID;
 CREATE VIEW viewDays as
 SELECT user.CardNumber, bookIssue.DateIssue, bookIssue.DateDue, datediff(bookIssue.DateDue,bookIssue.DateIssue) as days
 FROM bookIssue
-INNER JOIN user on bookIssue.CardNumber=user.CardNumber
+INNER JOIN user on bookIssue.CardNumber=user.CardNumber;
 
 
 
