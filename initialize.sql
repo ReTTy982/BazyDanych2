@@ -60,7 +60,7 @@ CREATE TABLE bookCopy (
     CopyID int primary key not null auto_increment,
     BookID int not null,
     BranchID int not null,
-    CopyStatus bool not null default 0,
+    CopyStatus varchar(30) not null default 'na stanie',
     CONSTRAINT fk_bookCopy_book
     FOREIGN key (BookID)
     REFERENCES book(BookID) on UPDATE CASCADE on DELETE RESTRICT,
@@ -80,6 +80,18 @@ CREATE TABLE user (
     PhoneNumber VARCHAR(30) unique not null
 );
 
+CREATE TABLE librarian(
+    LibrarianID int primary key auto_increment,
+    Login varchar(20) not null,
+    Password varchar(20) not null,
+    BranchID int not null,
+    FirstName VARCHAR(255) not null,
+    LastName VARCHAR(255) not null,
+    CONSTRAINT fk_librarian_branch
+    FOREIGN KEY (BranchID)
+    REFERENCES branch(BranchID) on UPDATE CASCADE on delete restrict
+);
+
 CREATE TABLE bookIssue(
     bookIssueID int primary key auto_increment,
     CopyID int not null unique,
@@ -87,6 +99,7 @@ CREATE TABLE bookIssue(
     CardNumber int,
     DateIssue date not null,
     DateDue date not null,
+    LibrarianID int,
     CONSTRAINT fk_bookIssue_bookCopy
     FOREIGN key (CopyID)
     REFERENCES bookCopy(CopyID) on UPDATE CASCADE on DELETE RESTRICT,
@@ -95,17 +108,13 @@ CREATE TABLE bookIssue(
     REFERENCES branch(BranchID) on UPDATE CASCADE on DELETE RESTRICT,
     CONSTRAINT fk_bookIssue_user
     FOREIGN key (CardNumber)
-    REFERENCES user(CardNumber) on DELETE RESTRICT
+    REFERENCES user(CardNumber) on DELETE RESTRICT,
+    CONSTRAINT fk_bookIssue_librarian
+    FOREIGN key (LibrarianID)
+    REFERENCES librarian(LibrarianID)
 );
 
-CREATE TABLE librarian(
-    LibrarianID int primary key auto_increment,
-    Login varchar(20) not null,
-    Password varchar(20) not null,
-    BranchID int not null,
-    FirstName VARCHAR(255) not null,
-    LastName VARCHAR(255) not null
-);
+
 
 -- VIEWS
 
@@ -125,7 +134,9 @@ group by bookCopy.BranchID;
 
 -- Terminy oddania
 CREATE VIEW viewDays as
-SELECT user.CardNumber, bookIssue.DateIssue, bookIssue.DateDue, datediff(bookIssue.DateDue,bookIssue.DateIssue) as days
+SELECT user.CardNumber, bookIssue.DateIssue, bookIssue.DateDue, 
+datediff(bookIssue.DateDue,bookIssue.DateIssue) as days,
+IF(datediff(bookIssue.DateDue,bookIssue.DateIssue)<0,-(datediff(bookIssue.DateDue,bookIssue.DateIssue))*0.50,0) as payment
 FROM bookIssue
 INNER JOIN user on bookIssue.CardNumber=user.CardNumber;
 
@@ -141,14 +152,14 @@ CREATE TRIGGER tr_borrow
 after insert ON bookIssue
 FOR EACH ROW
 UPDATE bookcopy
-SET CopyStatus = 1
+SET CopyStatus = 'wypozyczona'
 WHERE bookCopy.CopyID = NEW.CopyID;
 
 CREATE TRIGGER tr_return
 after delete on bookIssue
 for each ROW
 update bookcopy
-set CopyStatus = 0
+set CopyStatus = 'na stanie'
 Where bookCopy.CopyID = old.CopyID;
 
 
