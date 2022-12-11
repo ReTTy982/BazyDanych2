@@ -51,16 +51,16 @@ CREATE TABLE book (
 
 
 CREATE TABLE branch (
-    BranchID int primary key not null,
+    BranchID int primary key not null auto_increment,
     BranchAddress VARCHAR(50) not null
 
 );
 
 CREATE TABLE bookCopy (
-    CopyID int primary key not null,
+    CopyID int primary key not null auto_increment,
     BookID int not null,
     BranchID int not null,
-    CopyStatus bool not null,
+    CopyStatus bool not null default 0,
     CONSTRAINT fk_bookCopy_book
     FOREIGN key (BookID)
     REFERENCES book(BookID) on UPDATE CASCADE on DELETE RESTRICT,
@@ -77,14 +77,16 @@ CREATE TABLE user (
     Login varchar(30) not null unique,
     Password varchar(30) not null, -- Dodac tutaj kodowanie 
     Address VARCHAR(255) not null,
-    PhoneNumber int not null
+    PhoneNumber VARCHAR(30) unique not null
 );
 
 CREATE TABLE bookIssue(
-    bookIssueID int primary key,
-    CopyID int not null,
-    BranchID int not null,
-    CardNumber int not null,
+    bookIssueID int primary key auto_increment,
+    CopyID int not null unique,
+    BranchID int,
+    CardNumber int,
+    DateIssue date not null,
+    DateDue date not null,
     CONSTRAINT fk_bookIssue_bookCopy
     FOREIGN key (CopyID)
     REFERENCES bookCopy(CopyID) on UPDATE CASCADE on DELETE RESTRICT,
@@ -105,15 +107,29 @@ CREATE TABLE librarian(
     LastName VARCHAR(255) not null
 );
 
--- VARS
-SET @viewBooksInBranchVariable := 1;
 -- VIEWS
 
+-- Ksiazki w danym branchu
 CREATE VIEW viewBooksInBranch AS 
-SELECT bookCopy.CopyID, book.BookTitle, author.AuthorName
+SELECT bookCopy.CopyID, book.BookTitle, author.AuthorName, bookCopy.BranchID
 FROM bookCopy
 INNER JOIN book ON bookCopy.BookID=book.BookID
 INNER JOIN author ON book.AuthorID=author.AuthorID;
+
+-- Ilosc ksiazek w danym branchu
+CREATE VIEW viewNumberOfBooksInBranch AS
+SELECT bookCopy.BranchID, count(bookCopy.CopyID) as "Number of copies"
+from bookCopy
+group by bookCopy.BranchID;
+
+
+-- Terminy oddania
+CREATE VIEW viewDays as
+SELECT user.CardNumber, bookIssue.DateIssue, bookIssue.DateDue, datediff(bookIssue.DateDue,bookIssue.DateIssue) as days
+FROM bookIssue
+INNER JOIN user on bookIssue.CardNumber=user.CardNumber
+
+
 
 
 
@@ -121,7 +137,19 @@ INNER JOIN author ON book.AuthorID=author.AuthorID;
 
 -- TRIGGERS
 
+CREATE TRIGGER tr_borrow
+after insert ON bookIssue
+FOR EACH ROW
+UPDATE bookcopy
+SET CopyStatus = 1
+WHERE bookCopy.CopyID = NEW.CopyID;
 
+CREATE TRIGGER tr_return
+after delete on bookIssue
+for each ROW
+update bookcopy
+set CopyStatus = 0
+Where bookCopy.CopyID = old.CopyID;
 
 
 

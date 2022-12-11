@@ -1,0 +1,10 @@
+insert into branch (BranchAddress) values ('Concepción Tutuapa');
+insert into branch (BranchAddress) values ('Gavea');
+insert into branch (BranchAddress) values ('São Silvestre');
+insert into branch (BranchAddress) values ('Zborište');
+insert into branch (BranchAddress) values ('Göteborg');
+insert into branch (BranchAddress) values ('Johanneshov');
+insert into branch (BranchAddress) values ('Jiading');
+insert into branch (BranchAddress) values ('Baldone');
+insert into branch (BranchAddress) values ('Лабуништа');
+insert into branch (BranchAddress) values ('Lekas');
