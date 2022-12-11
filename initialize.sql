@@ -26,7 +26,7 @@ USE wypozyczalnia;
 
 CREATE TABLE publisher (
     PublisherName VARCHAR(100) primary key,
-    PhoneNumber VARCHAR(30)    
+    PhoneNumber VARCHAR(30) unique not null   
 );
 
 CREATE TABLE author (
@@ -35,10 +35,11 @@ CREATE TABLE author (
 );
 
 CREATE TABLE book (
-    BookID int primary key not null,
-    BookTitle VARCHAR(100) not null,
+    BookID int primary key not null auto_increment,
+    BookTitle VARCHAR(200) not null,
     PublisherName VARCHAR(100) not null,
     AuthorID int not null,
+    Category VARCHAR(100) not null,
     CONSTRAINT fk_book_publisher
     FOREIGN KEY (PublisherName)
     REFERENCES publisher(PublisherName) ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -59,6 +60,7 @@ CREATE TABLE bookCopy (
     CopyID int primary key not null,
     BookID int not null,
     BranchID int not null,
+    CopyStatus bool not null,
     CONSTRAINT fk_bookCopy_book
     FOREIGN key (BookID)
     REFERENCES book(BookID) on UPDATE CASCADE on DELETE RESTRICT,
