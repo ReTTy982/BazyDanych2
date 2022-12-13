@@ -95,8 +95,8 @@ CREATE TABLE librarian(
 CREATE TABLE bookIssue(
     bookIssueID int primary key auto_increment,
     CopyID int not null unique,
-    BranchID int,
-    CardNumber int,
+    BranchID int not null,
+    CardNumber int not null,
     DateIssue date not null,
     DateDue date not null,
     LibrarianID int,
